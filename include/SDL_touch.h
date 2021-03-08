@@ -57,6 +57,12 @@ typedef struct SDL_Finger
     float pressure;
 } SDL_Finger;
 
+/* Pressure detection */
+/* Values below REGULAR - regular touches, pressure can change value smoothly or jump from 0 to 1 (depends on device capabilities) */
+/* Values between REGULAR and MAXIMUM are force touches - only on devices with 3DTouch or DeepPress support */
+#define SDL_TOUCH_PRESSURE_REGULAR 1.0f
+#define SDL_TOUCH_PRESSURE_MAXIMUM 10.0f
+
 /* Used as the device ID for mouse events simulated with touch input */
 #define SDL_TOUCH_MOUSEID ((Uint32)-1)
 

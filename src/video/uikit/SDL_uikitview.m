@@ -221,12 +221,19 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (float)pressureForTouch:(UITouch *)touch
 {
 #ifdef __IPHONE_9_0
-    if ([touch respondsToSelector:@selector(force)]) {
-        return (float) touch.force;
+    if ([touch respondsToSelector:@selector(maximumPossibleForce)]) {
+        float maxForce = (float) touch.maximumPossibleForce;
+        float curForce = (float) touch.force;
+        if (maxForce > 1.0f && curForce > 1.0f) {
+            return 1.0f + (SDL_TOUCH_PRESSURE_MAXIMUM - 1.0f) * (curForce - 1.0f) / (maxForce - 1.0f);
+        }
+        if (maxForce > 0.0f) {
+            return curForce;
+        }
     }
 #endif
-
-    return 1.0f;
+    
+    return (touch.phase < UITouchPhaseEnded) ? 1.0f : 0.0f;
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
