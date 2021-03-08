@@ -702,6 +702,12 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
 /* SDL main function prototype */
 typedef int (*SDL_main_func)(int argc, char *argv[]);
 
+static pthread_key_t cleanup_key;
+static void cleanup_threadproc(void * arg) {
+    dlclose(arg);
+    pthread_setspecific(cleanup_key, NULL);
+}
+
 /* Start up the SDL app */
 JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls, jstring library, jstring function, jobject array)
 {
@@ -713,9 +719,8 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
 
     /* Save JNIEnv of SDLThread */
     Android_JNI_SetEnv(env);
-
     library_file = (*env)->GetStringUTFChars(env, library, NULL);
-    library_handle = dlopen(library_file, RTLD_GLOBAL);
+    library_handle = dlopen(library_file, RTLD_NOW);
 
     if (!library_handle) {
         /* When deploying android app bundle format uncompressed native libs may not extract from apk to filesystem.
@@ -723,7 +728,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
         const char *library_name = SDL_strrchr(library_file, '/');
         if (library_name && *library_name) {
             library_name += 1;
-            library_handle = dlopen(library_name, RTLD_GLOBAL);
+            library_handle = dlopen(library_name, RTLD_NOW);
         }
     }
 
@@ -781,9 +786,9 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
             __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
         }
         (*env)->ReleaseStringUTFChars(env, function, function_name);
-
-        dlclose(library_handle);
-
+        //dlclose(library_handle) will be called in cleanup routine
+        pthread_key_create(&cleanup_key, cleanup_threadproc);
+        pthread_setspecific( cleanup_key, library_handle );
     } else {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't load library %s", library_file);
     }
