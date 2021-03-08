@@ -929,6 +929,7 @@ if(SDL_AUDIO)
     file(GLOB OPENSLES_SOURCES ${SDL2_SOURCE_DIR}/src/audio/openslES/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${OPENSLES_SOURCES})
     list(APPEND EXTRA_LIBS OpenSLES)
+    set(SDL_AUDIO_DRIVER_OPENSLES 1)
   endif()
 endif()
 
