@@ -40,6 +40,7 @@ struct SDL_PrivateAudioData
 
 void openslES_ResumeDevices(void);
 void openslES_PauseDevices(void);
+void openslES_DeviceShutdown(_THIS);
 
 #endif /* _SDL_openslesaudio_h */
 

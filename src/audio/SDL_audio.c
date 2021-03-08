@@ -116,6 +116,10 @@ static const AudioBootStrap *const bootstrap[] = {
     NULL
 };
 
+#if SDL_AUDIO_DRIVER_OPENSLES
+
+#include "openslES/SDL_openslES.h"
+#endif
 
 #ifdef HAVE_LIBSAMPLERATE_H
 #ifdef SDL_LIBSAMPLERATE_DYNAMIC
@@ -1125,6 +1129,9 @@ close_audio_device(SDL_AudioDevice * device)
     current_audio.impl.UnlockDevice(device);
 
     if (device->thread != NULL) {
+#if SDL_AUDIO_DRIVER_OPENSLES == 1
+        openslES_DeviceShutdown(device);
+#endif
         SDL_WaitThread(device->thread, NULL);
     }
     if (device->mixer_lock != NULL) {

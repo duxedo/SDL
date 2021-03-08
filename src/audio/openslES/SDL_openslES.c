@@ -637,6 +637,11 @@ openslES_PlayDevice(_THIS)
     }
 }
 
+
+void openslES_DeviceShutdown(_THIS) {
+    SDL_SemPost(this->hidden->playsem);
+}
+
 /*/           n   playn sem */
 /* getbuf     0   -     1 */
 /* fill buff  0   -     1 */
